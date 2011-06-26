@@ -13,6 +13,7 @@ from query import PolymorphicQuerySet
 from query_translate import translate_polymorphic_Q_object
 from showfields import ShowFieldContent, ShowFieldType, ShowFieldTypeAndContent
 from showfields import ShowFields, ShowFieldTypes, ShowFieldsAndTypes # import old names for compatibility
+from admin import PolymorphicAdmin
 
 
 VERSION = (1, 0 , 0, 'beta')
