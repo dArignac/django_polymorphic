@@ -71,7 +71,6 @@ class PolymorphicAdmin(admin.ModelAdmin):
         opts = model._meta
 
         obj = self.get_object(request, unquote(object_id))
-        
         ### START: NEW CODE ###
         if isinstance(model, PolymorphicModelBase):
             model = type(obj)
@@ -98,8 +97,9 @@ class PolymorphicAdmin(admin.ModelAdmin):
                 form_validated = False
                 new_object = obj
             prefixes = {}
-            for FormSet, inline in zip(self.get_formsets(request, new_object),
-                                       self.inline_instances):
+            ## START_ ADJUSTED CODE ###
+            for FormSet, inline in zip(self.get_model_formsets(request, obj), self.get_model_inline_instances(obj)):
+            ### END: ADJUSTED CODE ###
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
@@ -109,7 +109,6 @@ class PolymorphicAdmin(admin.ModelAdmin):
                                   queryset=inline.queryset(request))
 
                 formsets.append(formset)
-
             if all_valid(formsets) and form_validated:
                 self.save_model(request, new_object, form, change=True)
                 form.save_m2m()
