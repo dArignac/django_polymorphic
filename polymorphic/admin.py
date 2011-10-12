@@ -62,6 +62,25 @@ class PolymorphicAdmin(admin.ModelAdmin):
     def get_model_formsets(self, request, obj):
         for inline in self.get_model_inline_instances(obj):
             yield inline.get_formset(request, obj)
+
+    def get_readonly_fields(self, request, obj=None):
+        """
+        Returns the readonly fields for the object.
+        @return tuple
+        """
+        if obj is not None:
+            try:
+                # get the AdminSite for the current object
+                admin_site = admin.site._registry.get(type(obj))
+            except:
+                raise ImproperlyConfigured(
+                    'AdminSite for model %s is not registered' % type(obj)
+                )
+            else:
+                return admin_site.readonly_fields
+        else:
+            # fallback
+            return self.readonly_fields
             
     @csrf_protect_m
     @transaction.commit_on_success
@@ -133,6 +152,7 @@ class PolymorphicAdmin(admin.ModelAdmin):
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
 
+        print self.get_readonly_fields(request, obj)
         adminForm = helpers.AdminForm(form, self.get_fieldsets(request, obj),
             self.prepopulated_fields, self.get_readonly_fields(request, obj),
             model_admin=self)
