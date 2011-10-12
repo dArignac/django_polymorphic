@@ -60,6 +60,9 @@ class PolymorphicAdmin(admin.ModelAdmin):
             )
         
     def get_model_formsets(self, request, obj):
+        """
+        Returns the models formsets for the given object.
+        """
         for inline in self.get_model_inline_instances(obj):
             yield inline.get_formset(request, obj)
 
