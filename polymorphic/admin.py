@@ -84,6 +84,25 @@ class PolymorphicAdmin(admin.ModelAdmin):
         else:
             # fallback
             return self.readonly_fields
+    
+    def get_declared_form(self, request, obj=None):
+        """
+        Returns the admin site form for the object.
+        @return ModelForm
+        """
+        if obj is not None:
+            try:
+                # get the AdminSite for the current object
+                admin_site = admin.site._registry.get(type(obj))
+            except:
+                raise ImproperlyConfigured(
+                    'AdminSite for model %s is not registered' % type(obj)
+                )
+            else:
+                return admin_site.form
+        else:
+            # fallback
+            return self.form
             
     @csrf_protect_m
     @transaction.commit_on_success
@@ -91,7 +110,6 @@ class PolymorphicAdmin(admin.ModelAdmin):
         "The 'change' admin view for this model."
         model = self.model
         opts = model._meta
-
         obj = self.get_object(request, unquote(object_id))
         ### START: NEW CODE ###
         if isinstance(model, PolymorphicModelBase):
@@ -155,7 +173,6 @@ class PolymorphicAdmin(admin.ModelAdmin):
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
 
-        print self.get_readonly_fields(request, obj)
         adminForm = helpers.AdminForm(form, self.get_fieldsets(request, obj),
             self.prepopulated_fields, self.get_readonly_fields(request, obj),
             model_admin=self)
@@ -206,7 +223,7 @@ class PolymorphicAdmin(admin.ModelAdmin):
         # default on modelform_factory
         exclude = exclude or None
         defaults = {
-            "form": self.form,
+            "form": self.get_declared_form(request, obj),
             "fields": fields,
             "exclude": exclude,
             "formfield_callback": curry(self.formfield_for_dbfield, request=request),
