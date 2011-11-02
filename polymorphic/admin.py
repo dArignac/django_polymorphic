@@ -155,7 +155,6 @@ class PolymorphicAdmin(admin.ModelAdmin):
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
 
-        print self.get_readonly_fields(request, obj)
         adminForm = helpers.AdminForm(form, self.get_fieldsets(request, obj),
             self.prepopulated_fields, self.get_readonly_fields(request, obj),
             model_admin=self)
