@@ -113,8 +113,10 @@ class PolymorphicAdmin(admin.ModelAdmin):
         obj = self.get_object(request, unquote(object_id))
         ### START: NEW CODE ###
         if isinstance(model, PolymorphicModelBase):
+            base_model = model
             model = type(obj)
             opts = model._meta
+            self.model = model
         ### END: NEW CODE ###
         
         if not self.has_change_permission(request, obj):
@@ -202,7 +204,10 @@ class PolymorphicAdmin(admin.ModelAdmin):
             'app_label': opts.app_label,
         }
         context.update(extra_context or {})
-        return self.render_change_form(request, context, change=True, obj=obj)
+        result = self.render_change_form(request, context, change=True, obj=obj)
+        if hasattr(self, 'base_model'):
+            self.model = base_model
+        return result
     
     def get_form(self, request, obj=None, **kwargs):
         """
