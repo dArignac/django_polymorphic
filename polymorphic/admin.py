@@ -90,20 +90,24 @@ class PolymorphicAdmin(admin.ModelAdmin):
         Returns the admin site form for the object.
         @return ModelForm
         """
+        model_admin = self.get_model_admin(obj)
+        return model_admin.form if model_admin is not None else self.form
+
+    def get_model_admin(self, obj):
+        """
+        Returns the ModelAdmin for the given object.
+        @return ModelAdmin
+        """
         if obj is not None:
             try:
                 # get the AdminSite for the current object
-                admin_site = admin.site._registry.get(type(obj))
+                return admin.site._registry.get(type(obj))
             except:
                 raise ImproperlyConfigured(
                     'AdminSite for model %s is not registered' % type(obj)
                 )
-            else:
-                return admin_site.form
-        else:
-            # fallback
-            return self.form
-            
+        return None
+
     @csrf_protect_m
     @transaction.commit_on_success
     def change_view(self, request, object_id, extra_context=None):
@@ -216,19 +220,24 @@ class PolymorphicAdmin(admin.ModelAdmin):
         Returns a Form class for use in the admin add view. This is used by
         add_view and change_view.
         """
-        if self.declared_fieldsets:
-            fields = flatten_fieldsets(self.declared_fieldsets)
+        
+        # fetch the model admin of the object
+        model_admin = self.get_model_admin(obj)
+        
+        if model_admin.declared_fieldsets:
+            fields = flatten_fieldsets(model_admin.declared_fieldsets)
         else:
             fields = None
-        if self.exclude is None:
+        if model_admin.exclude is None:
             exclude = []
         else:
-            exclude = list(self.exclude)
+            exclude = list(model_admin.exclude)
         exclude.extend(kwargs.get("exclude", []))
         exclude.extend(self.get_readonly_fields(request, obj))
         # if exclude is an empty list we pass None to be consistant with the
         # default on modelform_factory
         exclude = exclude or None
+        
         defaults = {
             "form": self.get_declared_form(request, obj),
             "fields": fields,
