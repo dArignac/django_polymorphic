@@ -204,10 +204,12 @@ class PolymorphicAdmin(admin.ModelAdmin):
             'app_label': opts.app_label,
         }
         context.update(extra_context or {})
+        ### START: ADJUSTED CODE ###
         result = self.render_change_form(request, context, change=True, obj=obj)
-        if hasattr(self, 'base_model'):
+        if 'base_model' in locals():
             self.model = base_model
         return result
+        ### END: ADJUSTED CODE ###
     
     def get_form(self, request, obj=None, **kwargs):
         """
