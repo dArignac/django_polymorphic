@@ -113,7 +113,6 @@ class PolymorphicAdmin(admin.ModelAdmin):
         obj = self.get_object(request, unquote(object_id))
         ### START: NEW CODE ###
         if isinstance(model, PolymorphicModelBase):
-            # remember to reset after rendering
             base_model = model
             model = type(obj)
             opts = model._meta
@@ -207,8 +206,8 @@ class PolymorphicAdmin(admin.ModelAdmin):
         context.update(extra_context or {})
         ### START: ADJUSTED CODE ###
         result = self.render_change_form(request, context, change=True, obj=obj)
-        # reset to base model
-        self.model = base_model
+        if 'base_model' in locals():
+            self.model = base_model
         return result
         ### END: ADJUSTED CODE ###
     
